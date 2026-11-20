@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebLingmoUI 组件演示</title>
+    <link rel="stylesheet" href="lib/LingmoUI.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5.2.10/400.min.css">
+    <style>
+        /* LingmoUI.css 依赖的强调色变量（原定义在 style.css，此处仅补齐依赖） */
+        :root {
+            --accent-color: rgb(34, 119, 255);
+            --accent-color-hover: rgb(0, 102, 180);
+            --accent-color-soft: rgba(0, 120, 212, 0.1);
+            accent-color: var(--accent-color);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Noto Sans", sans-serif;
+            background: var(--ui-content-bg);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        /* 演示页外壳布局：侧边栏 + 内容区 */
+        .demo-shell {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 页面视图显隐控制：默认隐藏，.active 显示 */
+        .demo-page { display: none; }
+        .demo-page.active { display: block; }
+
+        .appearance-section-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ui-text-primary);
+            padding: 12px 0 4px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ui-text-secondary);
+            margin: 8px 0 4px;
+        }
+
+        /* 外观设置：主题选择器 */
+        .theme-selector {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+            transition: scale 0.2s;
+        }
+
+        .theme-option:active { scale: 0.95; }
+
+        .theme-option span {
+            font-size: 13px;
+            color: var(--ui-text-secondary);
+        }
+
+        .theme-preview {
+            width: 196px;
+            height: 120px;
+            border-radius: var(--ui-radius-big);
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .theme-preview img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .theme-option.active .theme-preview {
+            box-shadow: 0 0 0 4px var(--ui-card-bg), 0 0 0 6px var(--accent-color);
+        }
+
+        .theme-option.active span { color: var(--accent-color); }
+
+        .theme-preview-light {
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-preview-dark {
+            display: flex;
+            flex-direction: column;
+            background: #2d2d2d;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 外观设置：强调色选择 */
+        .accent-color-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .accent-color-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s;
+        }
+
+        .accent-color-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--accent-color);
+        }
+
+        .accent-color-item:hover .accent-color-dot,
+        .accent-color-item.active .accent-color-dot {
+            box-shadow: 0 0 0 3px var(--ui-card-bg), 0 0 0 6px var(--accent-color);
+        }
+
+        .accent-check {
+            position: absolute;
+            color: #fff;
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.15s;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .accent-color-item.active .accent-check { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="demo-shell">
+        <!-- ============ Sidebar 侧边栏 ============ -->
+        <aside class="lingmoUI-sidebar" id="sidebar">
+            <div class="lingmoUI-sidebar-title">WebLingmoUI</div>
+            <div class="lingmoUI-sidebar-item active" data-page="home">
+                <div class="lingmoUI-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="#fff" d="M16.81 4.3a1.25 1.25 0 0 0-1.62 0l-9.75 8.288a1.25 1.25 0 0 0-.44.953V26.5a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5v-7a2.5 2.5 0 0 1 2.5-2.5h5.004a2.5 2.5 0 0 1 2.5 2.5v7a.5.5 0 0 0 .5.5H26.5a.5.5 0 0 0 .5-.5V13.54a1.25 1.25 0 0 0-.44-.952zm-2.915-1.523a3.25 3.25 0 0 1 4.21 0l9.75 8.287A3.25 3.25 0 0 1 29 13.54V26.5a2.5 2.5 0 0 1-2.5 2.5h-4.996a2.5 2.5 0 0 1-2.5-2.5v-7a.5.5 0 0 0-.5-.5H13.5a.5.5 0 0 0-.5.5v7a2.5 2.5 0 0 1-2.5 2.5h-5A2.5 2.5 0 0 1 3 26.5V13.54a3.25 3.25 0 0 1 1.145-2.476z"/></svg></div>
+                <span>首页</span>
+            </div>
+            <div class="lingmoUI-sidebar-item" data-page="components">
+                <div class="lingmoUI-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="#fff" d="M14 3a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3zM4 14a2 2 0 0 0 2 2h1v-3H4zm4 2h6a2 2 0 0 0 2-2v-1H8zM6 4a2 2 0 0 0-2 2v6h8V4zm7 8h3V8h-3zm0-5h3V6a2 2 0 0 0-2-2h-1z"/></svg></div>
+                <span>组件</span>
+            </div>
+        </aside>
+
+        <!-- ============ Content 内容区 ============ -->
+        <main class="lingmoUI-content" id="content">
+            <!-- ============ 首页页面 ============ -->
+            <div class="demo-page active" id="pageHome">
+                <div class="lingmoUI-page-title">首页</div>
+                <section class="lingmoUI-card">
+                    <div class="appearance-section-title">欢迎使用 WebLingmoUI</div>
+                    <p style="font-size:13px; color:var(--ui-text-secondary); line-height:1.8;">
+                        这是一套由 <a href="https://github.com/hezichen9">zichen</a> 构建的轻量级 UI 组件库，旨在复刻 <a href="https://github.com/LingmoOS/LingmoUI">LingmoUI (QT)</a> 的外观，支持深色模式与自定义主题色。
+                    </p>
+                </section>
+                <section class="lingmoUI-card">
+                    <div class="appearance-section-title">主题</div>
+                    <div class="theme-selector">
+                        <div class="theme-option active" data-theme="light">
+                            <div class="theme-preview theme-preview-light">
+                                <img src="icons/lingmo-settings/light_mode.png">
+                            </div>
+                            <span>浅色模式</span>
+                        </div>
+                        <div class="theme-option" data-theme="dark">
+                            <div class="theme-preview theme-preview-dark">
+                                <img src="icons/lingmo-settings/dark_mode.png">
+                            </div>
+                            <span>深色模式</span>
+                        </div>
+                    </div>
+                    <div class="appearance-section-title">强调色</div>
+                    <div class="accent-color-grid">
+                        <div class="accent-color-item active" data-color="blue" style="--accent-color: rgb(34, 119, 255);">
+                            <div class="accent-color-dot"></div>
+                            <div class="accent-check">✓</div>
+                        </div>
+                        <div class="accent-color-item" data-color="red" style="--accent-color: rgb(255, 92, 109);">
+                            <div class="accent-color-dot"></div>
+                            <div class="accent-check">✓</div>
+                        </div>
+                        <div class="accent-color-item" data-color="green" style="--accent-color: rgb(53, 191, 86);">
+                            <div class="accent-color-dot"></div>
+                            <div class="accent-check">✓</div>
+                        </div>
+                        <div class="accent-color-item" data-color="purple" style="--accent-color: rgb(130, 102, 255);">
+                            <div class="accent-color-dot"></div>
+                            <div class="accent-check">✓</div>
+                        </div>
+                        <div class="accent-color-item" data-color="pink" style="--accent-color: rgb(202, 100, 172);">
+                            <div class="accent-color-dot"></div>
+                            <div class="accent-check">✓</div>
+                        </div>
+                        <div class="accent-color-item" data-color="orange" style="--accent-color: rgb(254, 160, 66);">
+                            <div class="accent-color-dot"></div>
+                            <div class="accent-check">✓</div>
+                        </div>
+                        <div class="accent-color-item" data-color="grey" style="--accent-color: rgb(79, 89, 107);">
+                            <div class="accent-color-dot"></div>
+                            <div class="accent-check">✓</div>
+                        </div>
+                    </div>
+                </section>
+                <section class="lingmoUI-card">
+                    <div class="appearance-section-title">快速开始</div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-card"><span>Card / Row / Info</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-switch"><span>Switch 开关</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-tabbar"><span>TabBar 标签栏</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-combobox"><span>Combobox 下拉框</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-iconcheck"><span>IconCheck 图标复选</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-slider"><span>Slider 滑块</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-check"><span>Checkbox / Radio</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-input"><span>Input 输入框</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-button"><span>Button 按钮</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-dialog"><span>Dialog 对话框</span></div>
+                    <div class="lingmoUI-sidebar-item" data-jump="sec-ringchart"><span>RingChart 环形图</span></div>
+                </section>
+            </div>
+
+            <!-- ============ 组件页面 ============ -->
+            <div class="demo-page" id="pageComponents">
+                <div class="lingmoUI-page-title">组件</div>
+
+                <!-- Card / Row / Info -->
+                <section class="lingmoUI-card" id="sec-card">
+                <div class="appearance-section-title">Card/Row/Info/Divider</div>
+                <div class="lingmoUI-row lingmoUI-divider">
+                    <span class="lingmoUI-info-label">设备名称</span>
+                    <span class="lingmoUI-info-value">LingmoOS Demo</span>
+                </div>
+                <div class="lingmoUI-row lingmoUI-divider">
+                    <span class="lingmoUI-info-label">系统版本</span>
+                    <span class="lingmoUI-info-value">3.0.0 (LingmoUI)</span>
+                </div>
+                <div class="lingmoUI-row">
+                    <span class="lingmoUI-info-label">内核</span>
+                    <span class="lingmoUI-info-value">Linux 6.6.0</span>
+                </div>
+                <div class="lingmoUI-info-grid three-col">
+                    <div class="lingmoUI-info-item">
+                        <div class="lingmoUI-info-item-label">处理器</div>
+                        <div class="lingmoUI-info-item-value">Oualcomm(R) Milkdragon(tm) 8 Elite CPU @ 9178.13 GHz</div>
+                    </div>
+                    <div class="lingmoUI-info-item">
+                        <div class="lingmoUI-info-item-label">内存</div>
+                        <div class="lingmoUI-info-item-value">24 GB</div>
+                    </div>
+                    <div class="lingmoUI-info-item">
+                        <div class="lingmoUI-info-item-label">磁盘</div>
+                        <div class="lingmoUI-info-item-value">512 GB SSD</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Switch -->
+            <section class="lingmoUI-card" id="sec-switch">
+                <div class="appearance-section-title">Switch 开关</div>
+                <div class="lingmoUI-row">
+                    <span class="lingmoUI-info-label">无线网络</span>
+                    <div class="lingmoUI-switch active" data-name="wifi">
+                        <div class="lingmoUI-switch-track"><div class="lingmoUI-switch-thumb"></div></div>
+                    </div>
+                </div>
+                <div class="lingmoUI-row">
+                    <span class="lingmoUI-info-label">蓝牙</span>
+                    <div class="lingmoUI-switch" data-name="bluetooth">
+                        <div class="lingmoUI-switch-track"><div class="lingmoUI-switch-thumb"></div></div>
+                    </div>
+                </div>
+                <div class="lingmoUI-row">
+                    <span class="lingmoUI-info-label">飞行模式</span>
+                    <div class="lingmoUI-switch" data-name="airplane">
+                        <div class="lingmoUI-switch-track"><div class="lingmoUI-switch-thumb"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TabBar -->
+            <section class="lingmoUI-card" id="sec-tabbar">
+                <div class="appearance-section-title">TabBar 标签栏</div>
+                <div class="lingmoUI-tabbar" data-setting="scale">
+                    <div class="lingmoUI-tab active" data-value="1.0">100%</div>
+                    <div class="lingmoUI-tab" data-value="1.25">125%</div>
+                    <div class="lingmoUI-tab" data-value="1.5">150%</div>
+                    <div class="lingmoUI-tab" data-value="1.75">175%</div>
+                </div>
+            </section>
+
+            <!-- Combobox -->
+            <section class="lingmoUI-card" id="sec-combobox">
+                <div class="appearance-section-title">Combobox 下拉框</div>
+                <div class="lingmoUI-grid-layout">
+                    <div class="lingmoUI-row">
+                        <div class="lingmoUI-combobox" style="width:180px;">
+                            <select id="resolutionSelect">
+                                <option value="1920x1080" selected>1920 x 1080</option>
+                                <option value="2560x1440">2560 x 1440</option>
+                                <option value="3840x2160">3840 x 2160</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="lingmoUI-row">
+                        <div class="lingmoUI-combobox" style="width:140px;">
+                            <select id="refreshRateSelect">
+                                <option value="60" selected>60 Hz</option>
+                                <option value="90">90 Hz</option>
+                                <option value="120">120 Hz</option>
+                                <option value="144">144 Hz</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- IconCheck -->
+            <section class="lingmoUI-card" id="sec-iconcheck">
+                <div class="appearance-section-title">IconCheck 图标复选框</div>
+                <div class="lingmoUI-icon-check-row" id="rotationRow">
+                    <div class="lingmoUI-icon-check active" data-rotation="0">
+                        <div class="lingmoUI-icon-check-icon"><img src="icons/lingmo-settings/rotnormal.svg"></div>
+                        <span>标准</span>
+                    </div>
+                    <div class="lingmoUI-icon-check" data-rotation="90">
+                        <div class="lingmoUI-icon-check-icon"><img src="icons/lingmo-settings/rot90.svg"></div>
+                        <span>90°</span>
+                    </div>
+                    <div class="lingmoUI-icon-check" data-rotation="180">
+                        <div class="lingmoUI-icon-check-icon"><img src="icons/lingmo-settings/rot180.svg"></div>
+                        <span>180°</span>
+                    </div>
+                    <div class="lingmoUI-icon-check" data-rotation="270">
+                        <div class="lingmoUI-icon-check-icon"><img src="icons/lingmo-settings/rot270.svg"></div>
+                        <span>270°</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slider -->
+            <section class="lingmoUI-card" id="sec-slider">
+                <div class="appearance-section-title">Slider 滑块</div>
+                <div class="lingmoUI-row">
+                    <span class="appearance-label">亮度</span>
+                    <div class="lingmoUI-slider" id="brightnessSlider">
+                        <div class="lingmoUI-slider-track">
+                            <div class="lingmoUI-slider-fill" style="width: 91%;"></div>
+                        </div>
+                        <div class="lingmoUI-slider-handle" style="left: 91%;">
+                            <div class="lingmoUI-slider-tooltip">91</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lingmoUI-row">
+                    <span class="appearance-label">音量</span>
+                    <div class="lingmoUI-slider" id="volumeSlider">
+                        <div class="lingmoUI-slider-track">
+                            <div class="lingmoUI-slider-fill" style="width: 78%;"></div>
+                        </div>
+                        <div class="lingmoUI-slider-handle" style="left: 78%;">
+                            <div class="lingmoUI-slider-tooltip">78</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Checkbox / Radio -->
+            <section class="lingmoUI-card" id="sec-check">
+                <div class="appearance-section-title">Checkbox / Radio 复选与单选</div>
+                <div class="lingmoUI-row">
+                    <span class="lingmoUI-info-label">复选项</span>
+                    <div style="display:flex; gap:18px;">
+                        <label class="lingmoUI-checkbox">
+                            <input type="checkbox" hidden checked>
+                            <span class="lingmoUI-checkbox-box"><svg viewBox="0 0 24 24" width="13" height="13"><path fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4 10-10"/></svg></span>
+                            <span>选项1</span>
+                        </label>
+                        <label class="lingmoUI-checkbox">
+                            <input type="checkbox" hidden>
+                            <span class="lingmoUI-checkbox-box"><svg viewBox="0 0 24 24" width="13" height="13"><path fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4 10-10"/></svg></span>
+                            <span>选项2</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="lingmoUI-row">
+                    <span class="lingmoUI-info-label">单选项</span>
+                    <div style="display:flex; gap:18px;">
+                        <label class="lingmoUI-radio"><input type="radio" name="demoTheme" hidden checked><span class="lingmoUI-radio-dot"></span><span>选项1</span></label>
+                        <label class="lingmoUI-radio"><input type="radio" name="demoTheme" hidden><span class="lingmoUI-radio-dot"></span><span>选项2</span></label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Input -->
+            <section class="lingmoUI-card" id="sec-input">
+                <div class="appearance-section-title">Input 输入框</div>
+                <div class="lingmoUI-info-grid three-col">
+                    <label class="lingmoUI-textfield">
+                        <span class="lingmoUI-textfield-label">常规</span>
+                        <input class="lingmoUI-textfield-input" type="text" placeholder="请输入文本">
+                    </label>
+                    <label class="lingmoUI-textfield has-error">
+                        <span class="lingmoUI-textfield-label">错误</span>
+                        <input class="lingmoUI-textfield-input" type="text" value="host_machine">
+                        <span class="lingmoUI-textfield-hint">该名称已被占用</span>
+                    </label>
+                    <label class="lingmoUI-textfield">
+                        <span class="lingmoUI-textfield-label">密码</span>
+                        <input class="lingmoUI-textfield-input" type="password" placeholder="请输入密码">
+                    </label>
+                    <label class="lingmoUI-textfield">
+                        <span class="lingmoUI-textfield-label">只读</span>
+                        <input class="lingmoUI-textfield-input is-disabled" type="text" value="不可编辑" disabled>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Button -->
+            <section class="lingmoUI-card" id="sec-button">
+                <div class="appearance-section-title">Button 按钮</div>
+                <div class="lingmoUI-row">
+                    <div>
+						<button class="lingmoUI-button-primary">强调按钮</button>
+						<button class="lingmoUI-button-primary" disabled>强调按钮</button>
+                    </div>
+                </div>
+                <div class="lingmoUI-row">
+                    <div>
+						<button class="lingmoUI-button">普通按钮</button>
+						<button class="lingmoUI-button" disabled>普通按钮</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RingChart -->
+            <section class="lingmoUI-card" id="sec-ringchart">
+                <div class="appearance-section-title">RingChart 环形图</div>
+                <div style="display:flex; gap:32px; padding:20px 0; flex-wrap:wrap;">
+                    <div class="lingmoUI-ring-chart">
+                        <svg viewBox="0 0 200 200">
+                            <circle class="lingmoUI-ring-chart-bg" cx="100" cy="100" r="80"></circle>
+                            <circle class="lingmoUI-ring-chart-progress" cx="100" cy="100" r="80"
+                                stroke-dasharray="502.65" stroke-dashoffset="448.36"></circle>
+                        </svg>
+                        <div class="lingmoUI-ring-chart-inner">
+                            <div class="lingmoUI-ring-chart-percent">10.8%</div>
+                            <div class="lingmoUI-ring-chart-label">处理器</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dialog -->
+            <section class="lingmoUI-card" id="sec-dialog">
+                <div class="appearance-section-title">Dialog 对话框</div>
+                <div class="lingmoUI-row">
+                    <span class="lingmoUI-info-label">对话框</span>
+                    <button class="lingmoUI-button" id="demoDialogBtn">打开对话框</button>
+                </div>
+            </section>
+
+            <div style="height:40px;"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="lib/LingmoUI.js"></script>
+    <script>
+        (function () {
+            const content = document.getElementById('content');
+
+            // Combobox / Switch / TabBar / IconCheck / 表单控件统一初始化
+            LingmoUI.initCombobox(content);
+            LingmoUI.initSwitch(content);
+            LingmoUI.initTabBar(content);
+            LingmoUI.initIconCheck(content);
+            LingmoUI.initFormControls(content);
+
+            // Slider 需逐个初始化（initAll 不含 slider）
+            LingmoUI.initSlider(document.getElementById('brightnessSlider'));
+            LingmoUI.initSlider(document.getElementById('volumeSlider'));
+
+            // Dialog 演示：点击按钮打开对话框
+            document.getElementById('demoDialogBtn').addEventListener('click', () => {
+                LingmoUI.showDialog({
+                    title: '对话框',
+                    content: '这是一个 LingmoUI 对话框示例。<br>点击遮罩、按 ESC 或下方按钮均可关闭。',
+                    buttons: [
+                        { text: '取消' },
+                        { text: '确定', primary: true, onClick: () => LingmoUI.closeDialog() }
+                    ]
+                });
+            });
+
+            // 侧边栏导航：在「首页」与「组件」两个页面间切换
+            const sidebar = document.getElementById('sidebar');
+            const pageHome = document.getElementById('pageHome');
+            const pageComponents = document.getElementById('pageComponents');
+            function showPage(pageId) {
+                pageHome.classList.toggle('active', pageId === 'home');
+                pageComponents.classList.toggle('active', pageId === 'components');
+                sidebar.querySelectorAll('.lingmoUI-sidebar-item').forEach(i => {
+                    i.classList.toggle('active', i.dataset.page === pageId);
+                });
+            }
+            sidebar.addEventListener('click', (e) => {
+                const item = e.target.closest('.lingmoUI-sidebar-item');
+                if (!item || !item.dataset.page) return;
+                showPage(item.dataset.page);
+            });
+
+            // 首页「快速开始」列表：跳转到组件页并定位到对应组件
+            pageHome.addEventListener('click', (e) => {
+                const jump = e.target.closest('[data-jump]');
+                if (!jump) return;
+                showPage('components');
+                const target = document.getElementById(jump.dataset.jump);
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+
+            // 解析 rgb()/十六进制颜色字符串
+            function parseColor(str) {
+                str = str.trim();
+                if (str.startsWith('rgb(')) {
+                    const parts = str.slice(4, -1).split(',').map(s => parseInt(s.trim()));
+                    return { r: parts[0], g: parts[1], b: parts[2] };
+                }
+                if (str.startsWith('#')) {
+                    let hex = str.slice(1);
+                    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+                    return {
+                        r: parseInt(hex.slice(0, 2), 16),
+                        g: parseInt(hex.slice(2, 4), 16),
+                        b: parseInt(hex.slice(4, 6), 16)
+                    };
+                }
+                return null;
+            }
+
+            // 调整颜色明度，用于派生 hover 色
+            function adjustBrightness(rgb, percent) {
+                const factor = 1 + percent / 100;
+                return {
+                    r: Math.max(0, Math.min(255, Math.round(rgb.r * factor))),
+                    g: Math.max(0, Math.min(255, Math.round(rgb.g * factor))),
+                    b: Math.max(0, Math.min(255, Math.round(rgb.b * factor)))
+                };
+            }
+
+            // 外观设置：浅色 / 深色模式切换
+            document.querySelector('.theme-selector').addEventListener('click', (e) => {
+                const option = e.target.closest('.theme-option');
+                if (!option) return;
+                option.parentElement.querySelectorAll('.theme-option')
+                    .forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                LingmoUI.setTheme(option.dataset.theme);
+            });
+
+            // 外观设置：强调色切换
+            const root = document.documentElement;
+            document.querySelector('.accent-color-grid').addEventListener('click', (e) => {
+                const item = e.target.closest('.accent-color-item');
+                if (!item) return;
+                item.parentElement.querySelectorAll('.accent-color-item')
+                    .forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                const rgb = parseColor(getComputedStyle(item).getPropertyValue('--accent-color'));
+                if (!rgb) return;
+                root.style.setProperty('--accent-color', `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                const hover = adjustBrightness(rgb, -15);
+                root.style.setProperty('--accent-color-hover', `rgb(${hover.r}, ${hover.g}, ${hover.b})`);
+                root.style.setProperty('--accent-color-soft', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`);
+            });
+        })();
+    </script>
+</body>
+</html>
